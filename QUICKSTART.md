@@ -1,6 +1,6 @@
 # Quick Reference Guide
 
-Concise reference for AI Craft Spellbook spells and commands.
+Concise reference for the AI Craft Spellbook spells and commands.
 
 > **New user?** See [START_HERE.md](START_HERE.md) to get started in 3 steps!
 

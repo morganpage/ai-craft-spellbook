@@ -1,15 +1,14 @@
 # New User Quick Start Guide
 
-Start using AI Craft Spellbook in 3 simple steps!
+Start using the AI Craft Spellbook in 3 simple steps!
 
 ## 📋 Step 1: Get Started
 
 1. **Clone the repository**
-   ```bash
-git clone https://github.com/yourusername/ai-craft-spellbook.git
-cd ai-craft-spellbook
-   ```
-
+    ```bash
+    git clone https://github.com/morganpage/ai-craft-spellbook.git
+    cd ai-craft-spellbook
+    ```
 2. **Install Claude Code** (if you haven't already)
    ```bash
    # Via npm

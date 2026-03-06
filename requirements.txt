@@ -1,4 +1,9 @@
-# AICraft Framework - Magical Spell Components
+# AI Craft Spellbook - Magical Spell Components
+# Core dependencies for the AI Craft Spellbook framework
+
+# =============================================================================
+# CORE SPELL COMPONENTS
+# =============================================================================
 
 # Audio Cleansing Ritual
 # FFmpeg must be installed separately: brew install ffmpeg (macOS) or apt-get install ffmpeg (Linux)
@@ -7,15 +12,47 @@
 rembg>=2.0.50
 Pillow>=10.0.0
 
-# Core Spell Components
+# Core utilities
 python-dateutil>=2.8.2
 
-# Optional: For enhanced magical capabilities
-# requests>=2.31.0  # For web scraping rituals
-# beautifulsoup4>=4.12.0  # For HTML parsing
-# pandas>=2.0.0  # For data manipulation
-# openpyxl>=3.1.0  # For Excel file manipulation
-# google-auth>=2.23.0  # For Google services authentication
-# google-auth-oauthlib>=1.0.0  # For Google OAuth
-# google-auth-httplib2>=0.1.0  # For Google API HTTP
-# google-api-python-client>=2.100.0  # For Google API access
+# =============================================================================
+# TESTING & DEVELOPMENT
+# =============================================================================
+
+# Testing framework
+pytest>=7.4.0
+pytest-cov>=4.1.0
+pytest-mock>=3.11.0
+
+# Code quality
+black>=23.7.0
+flake8>=6.1.0
+mypy>=1.5.0
+
+# Type stubs
+types-Pillow>=10.0.0
+types-python-dateutil>=2.8.0
+
+# =============================================================================
+# OPTIONAL DEPENDENCIES
+# =============================================================================
+
+# Uncomment as needed for your spells:
+
+# Web scraping rituals
+# requests>=2.31.0
+# beautifulsoup4>=4.12.0
+
+# Data manipulation
+# pandas>=2.0.0
+# openpyxl>=3.1.0
+
+# Google services integration
+# google-auth>=2.23.0
+# google-auth-oauthlib>=1.0.0
+# google-auth-httplib2>=0.1.0
+# google-api-python-client>=2.100.0
+
+# Image processing enhancements
+# imageio>=2.31.0
+# scikit-image>=0.21.0

@@ -4,10 +4,40 @@ import os
 import re
 import shutil
 import subprocess
+import sys
 import tempfile
 from datetime import datetime, timezone
 from typing import Dict, Any, Optional, List, Tuple
 
+# Add parent directory to path for imports when running as script
+if __name__ == "__main__":
+    sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+from spells.utils.common import (
+    save_metadata,
+    validate_input_file,
+    validate_output_path,
+    get_spell_metadata_base,
+    setup_output_directory,
+    get_logger,
+    check_ffmpeg,
+    check_ffprobe,
+    format_bytes,
+    format_duration,
+    PerformanceTracker,
+    setup_logging,
+)
+from spells.utils.error_handling import (
+    SpellFumbleError,
+    ArcaneDisruptionError,
+    InvalidReagentError,
+    handle_spell_error,
+)
+
+
+# =============================================================================
+# SPELL CONFIGURATION
+# =============================================================================
 
 NOISE_STRENGTH_SETTINGS = {
     "light": "afftdn=nr=10:nf=-40",
@@ -15,8 +45,23 @@ NOISE_STRENGTH_SETTINGS = {
     "heavy": "afftdn=nr=30:nf=-30",
 }
 
+SUPPORTED_FORMATS = {
+    ".mp3", ".wav", ".m4a", ".aac", ".ogg", ".flac", ".wma",
+    ".mp4", ".avi", ".mov", ".mkv", ".webm", ".flv", ".wmv"
+}
 
-def get_media_info(file_path: str) -> Dict[str, Any]:
+# Maximum file size: 500MB default
+MAX_FILE_SIZE = 500 * 1024 * 1024
+
+
+# =============================================================================
+# MEDIA ANALYSIS
+# =============================================================================
+
+def get_media_info(
+    file_path: str,
+    logger: Optional[Any] = None
+) -> Dict[str, Any]:
     """Analyze magical media artifact to reveal its arcane properties.
 
     This spell examines the artifact using the ancient scrying glass ffprobe
@@ -24,17 +69,14 @@ def get_media_info(file_path: str) -> Dict[str, Any]:
 
     Args:
         file_path: Path to the magical media artifact
+        logger: Optional logger instance
 
     Returns:
         Dict containing duration, audio codec, video codec, and other arcane properties
 
     Raises:
-        FileNotFoundError: If the artifact cannot be found in the dungeon
-        RuntimeError: If the scrying glass fails to reveal information
+        ArcaneDisruptionError: If the scrying glass fails to reveal information
     """
-    if not os.path.exists(file_path):
-        raise FileNotFoundError(f"Artifact not found: {file_path}")
-
     cmd = [
         "ffprobe",
         "-v", "quiet",
@@ -46,7 +88,10 @@ def get_media_info(file_path: str) -> Dict[str, Any]:
 
     result = subprocess.run(cmd, capture_output=True, text=True)
     if result.returncode != 0:
-        raise RuntimeError(f"Scrying glass failed: {result.stderr}")
+        raise ArcaneDisruptionError(
+            "Scrying glass failed to analyze artifact",
+            recovery_suggestion=f"FFprobe error: {result.stderr}"
+        )
 
     data = json.loads(result.stdout)
 
@@ -72,6 +117,9 @@ def get_media_info(file_path: str) -> Dict[str, Any]:
             info["has_video"] = True
             info["video_codec"] = stream.get("codec_name")
 
+    if logger:
+        logger.debug(f"Media info: {info}")
+
     return info
 
 
@@ -79,6 +127,7 @@ def detect_silence_periods(
     file_path: str,
     silence_threshold: float = -40.0,
     silence_duration: float = 0.5,
+    logger: Optional[Any] = None,
 ) -> List[Tuple[float, float]]:
     """Detect void moments of silence within the magical audio.
 
@@ -89,6 +138,7 @@ def detect_silence_periods(
         file_path: Path to the magical media artifact
         silence_threshold: dB threshold for void detection
         silence_duration: Minimum void duration in seconds
+        logger: Optional logger instance
 
     Returns:
         List of (start, end) tuples for each void period discovered
@@ -102,10 +152,10 @@ def detect_silence_periods(
     ]
 
     result = subprocess.run(cmd, capture_output=True, text=True)
-    
+
     silence_periods = []
     silence_start = None
-    
+
     for line in result.stderr.split('\n'):
         if 'silence_start:' in line:
             match = re.search(r'silence_start:\s*([\d.]+)', line)
@@ -117,7 +167,10 @@ def detect_silence_periods(
                 silence_end = float(match.group(1))
                 silence_periods.append((silence_start, silence_end))
                 silence_start = None
-    
+
+    if logger:
+        logger.debug(f"Detected {len(silence_periods)} silence periods")
+
     return silence_periods
 
 
@@ -141,21 +194,25 @@ def calculate_non_silent_segments(
     """
     if not silence_periods:
         return [(0, total_duration)]
-    
+
     segments = []
     current_pos = 0.0
-    
+
     for silence_start, silence_end in silence_periods:
         if current_pos < silence_start:
             end_with_padding = min(silence_start + padding, total_duration)
             segments.append((current_pos, end_with_padding))
         current_pos = max(current_pos, silence_end - padding)
-    
+
     if current_pos < total_duration:
         segments.append((current_pos, total_duration))
-    
+
     return segments
 
+
+# =============================================================================
+# SEGMENT PROCESSING
+# =============================================================================
 
 def extract_segment_with_fades(
     input_path: str,
@@ -181,14 +238,14 @@ def extract_segment_with_fades(
         is_final: Whether this is the final segment (skip fade out)
     """
     segment_duration = end - start
-    
+
     cmd = [
         "ffmpeg", "-y",
         "-ss", str(start),
         "-i", input_path,
         "-t", str(segment_duration),
     ]
-    
+
     fade_filters = []
     if fade_duration > 0:
         fade_filters.append(f"afade=t=in:st=0:d={fade_duration}")
@@ -196,9 +253,9 @@ def extract_segment_with_fades(
             fade_out_start = segment_duration - fade_duration
             if fade_out_start > fade_duration:
                 fade_filters.append(f"afade=t=out:st={fade_out_start}:d={fade_duration}")
-    
+
     audio_filter = ",".join(fade_filters) if fade_filters else "anull"
-    
+
     if has_video:
         cmd.extend([
             "-c:v", "copy",
@@ -214,10 +271,13 @@ def extract_segment_with_fades(
             "-af", audio_filter,
             output_path
         ])
-    
+
     result = subprocess.run(cmd, capture_output=True, text=True)
     if result.returncode != 0:
-        raise RuntimeError(f"Failed to extract segment ({start}-{end}): {result.stderr}")
+        raise ArcaneDisruptionError(
+            f"Failed to extract segment ({start}-{end})",
+            recovery_suggestion=f"FFmpeg error: {result.stderr}"
+        )
 
 
 def concatenate_segments(
@@ -239,7 +299,7 @@ def concatenate_segments(
         for path in segment_paths:
             f.write(f"file '{path}'\n")
         concat_list_path = f.name
-    
+
     try:
         if has_video:
             cmd = [
@@ -262,10 +322,13 @@ def concatenate_segments(
                 "-b:a", "192k",
                 output_path
             ]
-        
+
         result = subprocess.run(cmd, capture_output=True, text=True)
         if result.returncode != 0:
-            raise RuntimeError(f"Failed to concatenate segments: {result.stderr}")
+            raise ArcaneDisruptionError(
+                "Failed to concatenate segments",
+                recovery_suggestion=f"FFmpeg error: {result.stderr}"
+            )
     finally:
         os.unlink(concat_list_path)
 
@@ -288,9 +351,9 @@ def apply_filters(
         has_video: Whether the artifact contains visual magic
     """
     audio_filter = ",".join(filters) if filters else "anull"
-    
+
     cmd = ["ffmpeg", "-y", "-i", input_path]
-    
+
     if has_video:
         cmd.extend([
             "-c:v", "copy",
@@ -306,11 +369,18 @@ def apply_filters(
             "-af", audio_filter,
             output_path
         ])
-    
+
     result = subprocess.run(cmd, capture_output=True, text=True)
     if result.returncode != 0:
-        raise RuntimeError(f"Failed to apply magical filters: {result.stderr}")
+        raise ArcaneDisruptionError(
+            "Failed to apply magical filters",
+            recovery_suggestion=f"FFmpeg error: {result.stderr}"
+        )
 
+
+# =============================================================================
+# MAIN SPELL FUNCTION
+# =============================================================================
 
 def process_audio_video(
     input_path: str,
@@ -325,6 +395,7 @@ def process_audio_video(
     fade_duration: float = 0.01,
     silence_padding: float = 0.3,
     keep_temp_files: bool = False,
+    logger: Optional[Any] = None,
 ) -> Dict[str, Any]:
     """Channel the audio cleansing ritual to purify magical media artifacts.
 
@@ -346,27 +417,57 @@ def process_audio_video(
         fade_duration: Magical fade in/out duration at segment boundaries (default: 0.01)
         silence_padding: Magical buffer to add at segment boundaries (default: 0.3)
         keep_temp_files: Keep intermediate segment artifacts (default: False)
+        logger: Optional logger instance
 
     Returns:
         Dict containing arcane knowledge about the cleansing ritual
 
     Raises:
-        FileNotFoundError: If the input artifact doesn't exist
-        ValueError: If ritual parameters are invalid
-        RuntimeError: If the ritual fails during casting
+        InvalidReagentError: If input validation or parameters are invalid
+        ArcaneDisruptionError: If the ritual fails during casting
+        SpellFumbleError: For general spell failures
     """
-    if not os.path.exists(input_path):
-        raise FileNotFoundError(f"Artifact not found: {input_path}")
+    # Set up logger if not provided
+    if logger is None:
+        logger = get_logger("audio_cleanse")
 
+    # Check dependencies
+    if not check_ffmpeg() or not check_ffprobe():
+        raise InvalidReagentError(
+            "FFmpeg and FFprobe are required for this ritual",
+            recovery_suggestion="Install FFmpeg: brew install ffmpeg (macOS) or apt-get install ffmpeg (Linux)"
+        )
+
+    # Validate input file
+    logger.info(f"Validating artifact: {input_path}")
+    validation = validate_input_file(
+        input_path,
+        allowed_formats=SUPPORTED_FORMATS,
+        max_size_bytes=MAX_FILE_SIZE,
+        check_readable=True,
+    )
+    logger.info(f"Artifact validated: {format_bytes(validation['size_bytes'])}")
+
+    # Validate parameters
     if silence_threshold >= 0:
-        raise ValueError("Silence threshold must be negative (in dB)")
+        raise InvalidReagentError(
+            "Silence threshold must be negative (in dB)",
+            recovery_suggestion="Use values like -40, -50, or -60"
+        )
 
     if not -30 <= loudness_target <= -5:
-        raise ValueError("Loudness target should be between -30 and -5 LUFS")
+        raise InvalidReagentError(
+            "Loudness target should be between -30 and -5 LUFS",
+            recovery_suggestion="Common values: -14 (YouTube/Spotify), -16 ( podcasts)"
+        )
 
     if noise_strength not in NOISE_STRENGTH_SETTINGS:
-        raise ValueError(f"Noise strength must be one of: {', '.join(NOISE_STRENGTH_SETTINGS.keys())}")
+        raise InvalidReagentError(
+            f"Noise strength must be one of: {', '.join(NOISE_STRENGTH_SETTINGS.keys())}",
+            recovery_suggestion="Choose from: light, medium, heavy"
+        )
 
+    # Determine output path
     original_name = os.path.splitext(os.path.basename(input_path))[0]
     input_ext = os.path.splitext(input_path)[1]
 
@@ -374,77 +475,113 @@ def process_audio_video(
         output_dir = os.path.dirname(input_path) or "dungeon_cache"
         output_path = os.path.join(output_dir, f"{original_name}_purified{input_ext}")
 
-    os.makedirs(os.path.dirname(output_path) or ".", exist_ok=True)
+    # Validate and prepare output path
+    output_path = validate_output_path(
+        output_path,
+        check_writable=True,
+        create_parent_dirs=True,
+    )
 
-    input_info = get_media_info(input_path)
+    # Set up performance tracking
+    tracker = PerformanceTracker("audio_cleanse")
+    tracker.set_input_size(validation["size_bytes"])
+    tracker.start()
+
+    # Get media info
+    logger.info("Analyzing artifact with scrying glass...")
+    input_info = get_media_info(input_path, logger=logger)
 
     if not input_info["has_audio"]:
-        raise ValueError("Artifact has no audio stream to cleanse")
+        raise InvalidReagentError(
+            "Artifact has no audio stream to cleanse",
+            recovery_suggestion="Provide a file with audio content"
+        )
 
+    logger.info(f"Artifact duration: {format_duration(input_info['duration'])}")
+
+    # Processing
     temp_dir = tempfile.mkdtemp(prefix="audio_cleanse_")
     segment_paths = []
     silence_periods = []
     segments_removed = 0
-    
+
     try:
         current_input = input_path
-        
+
+        # Step 1: Remove silence
         if remove_silence:
-            print("Detecting void moments of silence...")
+            logger.info("Detecting void moments of silence...")
             silence_periods = detect_silence_periods(
-                input_path, silence_threshold, silence_duration
+                input_path, silence_threshold, silence_duration, logger
             )
-            
+
             if silence_periods:
-                print(f"Discovered {len(silence_periods)} void periods")
-                segments = calculate_non_silent_segments(input_info["duration"], silence_periods, silence_padding)
-                print(f"Extracting {len(segments)} magical segments...")
-                
+                logger.info(f"Discovered {len(silence_periods)} void periods")
+                segments = calculate_non_silent_segments(
+                    input_info["duration"], silence_periods, silence_padding
+                )
+                logger.info(f"Extracting {len(segments)} magical segments...")
+
                 for i, (start, end) in enumerate(segments):
                     segment_path = os.path.join(temp_dir, f"segment_{i:04d}{input_ext}")
                     is_final = (i == len(segments) - 1)
+
+                    if logger:
+                        logger.debug(f"Extracting segment {i+1}/{len(segments)}: {start:.2f}s - {end:.2f}s")
+
                     extract_segment_with_fades(
-                        current_input, start, end, fade_duration, segment_path, 
+                        current_input, start, end, fade_duration, segment_path,
                         input_info["has_video"], is_final
                     )
                     segment_paths.append(segment_path)
-                
+
                 concatenated_path = os.path.join(temp_dir, f"concatenated{input_ext}")
-                print("Fusing magical segments...")
+                logger.info("Fusing magical segments...")
                 concatenate_segments(segment_paths, concatenated_path, input_info["has_video"])
                 current_input = concatenated_path
-                
+
                 segments_removed = len(silence_periods)
             else:
-                print("No voids detected, skipping void banishment")
-        
+                logger.info("No voids detected, skipping void banishment")
+
+        # Step 2 & 3: Apply filters (noise reduction and normalization)
         filters = []
         if noise_reduction:
             filters.append(NOISE_STRENGTH_SETTINGS[noise_strength])
         if normalize:
             filters.append(f"loudnorm=I={loudness_target}:TP=-1.5:LRA=11")
-        
+
         if filters:
-            print("Channeling purification and balancing magic...")
+            logger.info("Channeling purification and balancing magic...")
             apply_filters(current_input, output_path, filters, input_info["has_video"])
         else:
             shutil.copy(current_input, output_path)
-        
+
+        # Handle temp files
         if keep_temp_files:
-            temp_save_dir = os.path.join(os.path.dirname(output_path) or ".", f"{original_name}_temp_segments")
+            temp_save_dir = os.path.join(
+                os.path.dirname(output_path) or ".",
+                f"{original_name}_temp_segments"
+            )
             shutil.move(temp_dir, temp_save_dir)
-            print(f"Temp artifacts saved to: {temp_save_dir}")
-        
+            logger.info(f"Temp artifacts saved to: {temp_save_dir}")
+
     finally:
         if not keep_temp_files and os.path.exists(temp_dir):
             shutil.rmtree(temp_dir)
 
-    output_info = get_media_info(output_path)
+    # Get output info
+    output_info = get_media_info(output_path, logger=logger)
+    tracker.set_output_size(output_info["size_bytes"])
+    tracker.stop()
 
-    metadata = {
+    logger.info("Ritual completed successfully!")
+
+    # Build metadata
+    metadata = get_spell_metadata_base("audio_cleanse")
+    metadata.update({
         "input_path": input_path,
         "output_path": output_path,
-        "processed_at": datetime.now(timezone.utc).isoformat(),
         "settings": {
             "silence_threshold_db": silence_threshold,
             "silence_duration_sec": silence_duration,
@@ -465,7 +602,7 @@ def process_audio_video(
         },
         "output_info": {
             "duration_sec": round(output_info["duration"], 2),
-            "size_bytes": os.path.getsize(output_path),
+            "size_bytes": output_info["size_bytes"],
             "has_video": output_info["has_video"],
             "has_audio": output_info["has_audio"],
             "audio_codec": output_info["audio_codec"],
@@ -478,29 +615,48 @@ def process_audio_video(
         "duration_reduction_percent": round(
             (1 - output_info["duration"] / input_info["duration"]) * 100, 2
         ) if input_info["duration"] > 0 else 0,
-    }
+    })
+    metadata["performance"] = tracker.get_metrics()
 
     return metadata
 
 
-def save_metadata(metadata: Dict[str, Any], output_path: str) -> None:
-    """Preserve arcane knowledge in a magical tome.
-
-    Args:
-        metadata: Arcane knowledge dictionary
-        output_path: Path to the magical tome
-    """
-    os.makedirs(os.path.dirname(output_path) or ".", exist_ok=True)
-    with open(output_path, "w", encoding="utf-8") as f:
-        json.dump(metadata, f, indent=2)
-
+# =============================================================================
+# COMMAND LINE INTERFACE
+# =============================================================================
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Channel the audio cleansing ritual: banish voids and balance magical energies"
+        description="Channel the audio cleansing ritual: banish voids and balance magical energies",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+Examples:
+  # Basic usage with all features
+  python spells/audio_cleanse.py --input recording.mp3
+
+  # Normalize only (no silence removal)
+  python spells/audio_cleanse.py --input audio.wav --no-silence-removal
+
+  # Heavy noise reduction with custom threshold
+  python spells/audio_cleanse.py --input video.mp4 --noise-strength heavy --silence-threshold -50
+
+  # Target specific loudness for podcasts
+  python spells/audio_cleanse.py --input podcast.wav --loudness -16
+        """
     )
-    parser.add_argument("--input", required=True, help="Path to the magical media artifact")
-    parser.add_argument("--output", help="Path to the purified artifact (optional)")
+
+    # Input/output arguments
+    parser.add_argument(
+        "--input", "-i",
+        required=True,
+        help="Path to the magical media artifact"
+    )
+    parser.add_argument(
+        "--output", "-o",
+        help="Path to the purified artifact (optional)"
+    )
+
+    # Silence detection settings
     parser.add_argument(
         "--silence-threshold",
         type=float,
@@ -513,12 +669,16 @@ def main():
         default=0.5,
         help="Minimum void duration in seconds to banish (default: 0.5)",
     )
+
+    # Loudness settings
     parser.add_argument(
         "--loudness",
         type=float,
         default=-14.0,
         help="Target magical loudness in LUFS (default: -14 for YouTube/Spotify)",
     )
+
+    # Feature toggles
     parser.add_argument(
         "--no-silence-removal",
         action="store_true",
@@ -534,12 +694,16 @@ def main():
         action="store_true",
         help="Skip purification magic (enabled by default)",
     )
+
+    # Noise reduction settings
     parser.add_argument(
         "--noise-strength",
         choices=["light", "medium", "heavy"],
         default="light",
         help="Purification strength (default: light)",
     )
+
+    # Advanced settings
     parser.add_argument(
         "--fade-duration",
         type=float,
@@ -558,7 +722,34 @@ def main():
         help="Keep intermediate segment artifacts for debugging",
     )
 
+    # Processing options
+    parser.add_argument(
+        "--max-size",
+        type=int,
+        default=MAX_FILE_SIZE,
+        metavar="BYTES",
+        help=f"Maximum file size in bytes (default: {MAX_FILE_SIZE})"
+    )
+    parser.add_argument(
+        "--log-level",
+        choices=["DEBUG", "INFO", "WARNING", "ERROR"],
+        default="INFO",
+        help="Logging level (default: INFO)"
+    )
+    parser.add_argument(
+        "--log-file",
+        metavar="PATH",
+        help="Path to log file (optional)"
+    )
+
     args = parser.parse_args()
+
+    # Set up logging
+    logger = setup_logging(
+        "audio_cleanse",
+        log_level=args.log_level,
+        log_file=args.log_file,
+    )
 
     try:
         metadata = process_audio_video(
@@ -574,38 +765,37 @@ def main():
             fade_duration=args.fade_duration,
             silence_padding=args.silence_padding,
             keep_temp_files=args.keep_temp,
+            logger=logger,
         )
 
+        # Save metadata
         original_name = os.path.splitext(os.path.basename(args.input))[0]
         metadata_dir = os.path.dirname(metadata["output_path"]) or "dungeon_cache"
-        metadata_path = os.path.join(metadata_dir, f"{original_name}_purification_metadata.json")
-
+        metadata_path = os.path.join(
+            metadata_dir, f"{original_name}_purification_metadata.json"
+        )
         save_metadata(metadata, metadata_path)
 
-        print(f"\nRitual completed successfully!")
-        print(f"Artifact: {metadata['input_path']}")
-        print(f"Purified: {metadata['output_path']}")
-        print(f"Duration: {metadata['input_info']['duration_sec']}s -> {metadata['output_info']['duration_sec']}s")
-        if metadata["duration_reduction_sec"] > 0:
-            print(f"Void banished: {metadata['duration_reduction_sec']}s ({metadata['duration_reduction_percent']}%)")
-        if metadata["silence_removal"]["silent_periods_found"] > 0:
-            print(f"Void periods banished: {metadata['silence_removal']['silent_periods_found']}")
-        if metadata["settings"]["noise_reduction"]:
-            print(f"Purification strength: {metadata['settings']['noise_strength']}")
-        print(f"Arcane knowledge: {metadata_path}")
+        # Print success message
+        print(f"\n✓ Ritual completed successfully!")
+        print(f"  Artifact: {metadata['input_path']}")
+        print(f"  Purified: {metadata['output_path']}")
+        print(f"  Duration: {format_duration(metadata['input_info']['duration_sec'])} → {format_duration(metadata['output_info']['duration_sec'])}")
 
-    except FileNotFoundError as e:
-        print(f"Spell fumble: {e}")
-        raise
-    except ValueError as e:
-        print(f"Invalid reagent: {e}")
-        raise
-    except RuntimeError as e:
-        print(f"Arcane disruption: {e}")
-        raise
+        if metadata["duration_reduction_sec"] > 0:
+            print(f"  Void banished: {format_duration(metadata['duration_reduction_sec'])} ({metadata['duration_reduction_percent']}%)")
+
+        if metadata["silence_removal"]["silent_periods_found"] > 0:
+            print(f"  Void periods banished: {metadata['silence_removal']['silent_periods_found']}")
+
+        if metadata["settings"]["noise_reduction"]:
+            print(f"  Purification strength: {metadata['settings']['noise_strength']}")
+
+        print(f"  Duration: {metadata['performance']['duration_seconds']:.2f}s")
+        print(f"  Arcane knowledge: {metadata_path}")
+
     except Exception as e:
-        print(f"Unexpected magical failure: {e}")
-        raise
+        handle_spell_error(e, "audio_cleanse", exit_on_error=True)
 
 
 if __name__ == "__main__":

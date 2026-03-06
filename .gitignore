@@ -81,3 +81,13 @@ logs/
 *.bak
 *.backup
 *~
+
+# Security & Type Checking
+.mypy_cache/
+.dmypy.json
+*.secrets
+secrets/
+
+# Example/Template Files (keep versions)
+*.example
+*.template

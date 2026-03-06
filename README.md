@@ -2,6 +2,8 @@
 
 A Dungeons & Dragons themed AI workflow automation framework that separates probabilistic AI reasoning from deterministic magical spell execution.
 
+**Version 2.0.0** - Enhanced with testing infrastructure, batch processing, structured logging, and comprehensive error handling!
+
 > **New here?** Start with [START_HERE.md](START_HERE.md) for a 3-step quick start guide!
 
 ## ⚡ Quick Examples
@@ -14,6 +16,8 @@ Start using AI Craft Spellbook immediately with these natural language commands 
 | "Remove background from character.png" | Casts dispel background hex |
 | "Purify my video.mp4" | Cleanses audio in video file |
 | "Dispel background on sprite.png with human model" | Uses u2net_human_seg crystal |
+| "Process all images in sprites/ with batch mode" | Batch processes multiple files |
+| "Cleanse audio with debug logging" | Runs with detailed logging |
 
 Simply type these commands in Claude Code and watch the magic happen!
 
@@ -33,9 +37,14 @@ For complete agent instructions, see [AI_CRAFT_SPELLBOOK.md](AI_CRAFT_SPELLBOOK.
 ```
 quests/          # Quest logs - your adventure guides (Markdown)
 spells/          # Spell scrolls - magical execution scripts (Python)
+  ├── utils/     # Shared magical utilities
+tests/           # Test suite - verify spell functionality
+examples/        # Sample files for testing
 dungeon_cache/   # Temporary treasures - intermediate processing files
+logs/            # Spell logs - detailed execution records
 .env             # Arcane keys - your API keys and secrets
 AI_CRAFT_SPELLBOOK.md  # Agent framework instructions
+CONTRIBUTING.md  # Development guide
 ```
 
 ### Layer 1: Quest Logs (The Adventure Guides)
@@ -60,6 +69,15 @@ Python scripts in `spells/` that execute deterministically:
 - Tome operations (file manipulation)
 - Arcane knowledge queries (database lookups)
 
+### Layer 4: Shared Utilities (New in v2.0)
+The `spells/utils/` package provides:
+- **Input validation** - File format, size, and permission checks
+- **Output sanitization** - Path validation and security
+- **Structured logging** - Themed log messages with configurable levels
+- **Performance tracking** - Duration and size metrics
+- **Error handling** - Themed exceptions with recovery suggestions
+- **Dependency checking** - Runtime verification of required tools
+
 ## 📜 Available Spells
 
 ### Audio Cleansing Ritual (`audio_cleanse.py`)
@@ -71,8 +89,28 @@ Purify audio artifacts by removing impurities, banishing void moments, and balan
 - Content distribution prep
 - Noisy environments
 
+**Features:**
+- Silence removal with configurable thresholds
+- Audio normalization to target LUFS
+- Noise reduction (light/medium/heavy)
+- Video audio track support
+- Structured logging and performance tracking
+- Comprehensive error handling
+
 ```bash
+# Basic usage
 python spells/audio_cleanse.py --input recording.mp3 --output purified.mp3
+
+# With custom settings
+python spells/audio_cleanse.py --input podcast.wav \
+  --silence-threshold -50 \
+  --loudness -16 \
+  --noise-strength heavy
+
+# With debug logging
+python spells/audio_cleanse.py --input audio.mp3 \
+  --log-level DEBUG \
+  --log-file logs/audio_cleanse.log
 ```
 
 See [quests/audio_cleanse.md](quests/audio_cleanse.md) for full quest guide.
@@ -86,8 +124,32 @@ Banish unwanted backgrounds from magical image artifacts using arcane vision.
 - Sprite sheet generation
 - Image extraction
 
+**Features:**
+- Multiple model support (u2net, u2netp, u2net_human_seg, etc.)
+- Alpha matting for cleaner edges
+- Batch processing with glob patterns
+- Structured logging and performance tracking
+- Comprehensive error handling
+
 ```bash
+# Basic usage
 python spells/dispel_background.py --input character.png --output character_no_bg.png
+
+# With alpha matting
+python spells/dispel_background.py --input photo.png \
+  --alpha-matting \
+  --model u2net_human_seg
+
+# Batch processing
+python spells/dispel_background.py \
+  --batch \
+  --input "sprites/*.png" \
+  --output-dir sprites_no_bg/
+
+# With debug logging
+python spells/dispel_background.py --input image.png \
+  --log-level DEBUG \
+  --log-file logs/dispel_background.log
 ```
 
 See [quests/dispel_background.md](quests/dispel_background.md) for full quest guide.
@@ -98,30 +160,72 @@ See [quests/dispel_background.md](quests/dispel_background.md) for full quest gu
 
 - Python 3.8+
 - FFmpeg (for audio cleansing rituals)
-- Required Python packages (install per spell documentation)
+  - macOS: `brew install ffmpeg`
+  - Linux: `sudo apt-get install ffmpeg`
+  - Windows: Download from [ffmpeg.org](https://ffmpeg.org/download.html)
 
 ### Installation
 
-1. Clone this repository:
+1. **Clone this repository:**
 ```bash
-git clone https://github.com/yourusername/ai-craft-spellbook.git
+git clone https://github.com/morganpage/ai-craft-spellbook.git
 cd ai-craft-spellbook
 ```
 
-2. Install spell dependencies:
+2. **Create a virtual environment:**
 ```bash
-# For audio cleansing
-pip install ffmpeg-python
-
-# For background dispelling
-pip install rembg pillow
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
 ```
 
-3. Configure your arcane keys:
+3. **Install spell dependencies:**
+```bash
+# Install all dependencies (including testing tools)
+pip install -r requirements.txt
+
+# Or install only core dependencies
+pip install rembg Pillow python-dateutil
+```
+
+4. **Configure your arcane keys:**
 ```bash
 cp .env.example .env
-# Edit .env with your API keys
+# Edit .env with your API keys and configuration
 ```
+
+5. **Verify installation:**
+```bash
+# Run tests to verify everything works
+pytest -v
+
+# Check spell availability
+python spells/audio_cleanse.py --help
+python spells/dispel_background.py --help
+```
+
+### Development Setup
+
+For contributors and those wanting to run tests:
+
+```bash
+# Install development dependencies
+pip install -r requirements.txt
+
+# Run tests
+pytest -v
+
+# Run tests with coverage
+pytest --cov=spells --cov-report=html
+
+# Check code style
+flake8 spells/
+black --check spells/
+
+# Type checking
+mypy spells/
+```
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for complete development guide.
 
 ### First Adventure
 
@@ -141,12 +245,14 @@ Claude Code understands natural language requests like:
 - "Remove background from image.png"
 - "Purify podcast and make it -16 LUFS"
 - "Use the human model to dispel background from portrait.png"
+- "Batch process all PNGs in the sprites directory"
+- "Run audio cleanse with debug logging enabled"
 
 Claude Code will:
 1. Read the appropriate quest log from `quests/`
 2. Check the spell in `spells/`
 3. Invoke the spell with the correct parameters
-4. Show you the results
+4. Show you the results and any errors
 
 ### Why Natural Language Works
 
@@ -183,6 +289,8 @@ claude
 - "Read the audio cleanse quest and cast the spell on podcast.mp3"
 - "Help me create a new spell to resize images"
 - "Fix the dispel background spell - it's failing on large images"
+- "Batch process all sprites with background removal"
+- "Run the test suite and show me the results"
 ```
 
 ### What Claude Code Can Do
@@ -193,6 +301,8 @@ claude
 - Create new spells following the D&D theme
 - Update quest logs with discoveries and fixes
 - Coordinate complex multi-step rituals
+- Run tests and validate changes
+- Review code for theme consistency
 
 ### Best Practices
 
@@ -200,67 +310,156 @@ claude
 - Provide actual file paths when invoking spells
 - Let Claude read the quest log before making changes
 - Ask Claude to explain what it's doing before it executes
+- Use logging flags when debugging issues
+
+## 🧪 Testing (New in v2.0)
+
+The framework includes a comprehensive test suite:
+
+```bash
+# Run all tests
+pytest -v
+
+# Run specific test file
+pytest tests/test_utils.py -v
+
+# Run with coverage report
+pytest --cov=spells --cov-report=html
+
+# Run only unit tests (skip integration tests)
+pytest -v -m "not integration"
+
+# Run with verbose output
+pytest -vv -s
+```
+
+### Test Structure
+
+- `tests/test_utils.py` - Tests for shared utilities
+- `tests/test_audio_cleanse.py` - Tests for audio cleansing spell
+- `tests/test_dispel_background.py` - Tests for background removal spell
+- `tests/fixtures/` - Sample test files
+
+## 📊 Logging & Debugging (New in v2.0)
+
+All spells now support structured logging:
+
+```bash
+# Enable debug logging
+python spells/audio_cleanse.py --input file.mp3 --log-level DEBUG
+
+# Log to file
+python spells/dispel_background.py --input image.png \
+  --log-file logs/spell.log
+
+# Both console and file logging
+python spells/audio_cleanse.py --input file.mp3 \
+  --log-level DEBUG \
+  --log-file logs/debug.log
+```
+
+### Log Levels
+
+- **ARCANE (DEBUG)** - Detailed diagnostic information
+- **SPELL (INFO)** - General informational messages (default)
+- **WARNING** - Warning messages for potential issues
+- **FUMBLE (ERROR)** - Error messages when spells fail
+- **CRITICAL** - Critical errors that prevent spell execution
+
+### Log Files
+
+Logs are stored in the `logs/` directory (automatically created):
+- `logs/audio_cleanse.log` - Audio cleansing spell logs
+- `logs/dispel_background.log` - Background removal spell logs
+- Custom paths can be specified with `--log-file`
+
+## 🎯 Performance Tracking (New in v2.0)
+
+All spells automatically track performance metrics:
+
+```json
+{
+  "performance": {
+    "duration_seconds": 2.45,
+    "input_size_bytes": 12345678,
+    "output_size_bytes": 9876543
+  }
+}
+```
+
+Performance data is included in all metadata files and logged during execution.
+
+## 🔒 Error Handling (New in v2.0)
+
+Enhanced error handling with themed messages:
+
+```bash
+# Spell fumble with recovery suggestion
+✗ Spell Fumble: audio_cleanse
+  Error Type: InvalidReagentError
+  Details: Artifact not found: podcast.mp3
+  Recovery: Check that the file path is correct and the file exists.
+```
+
+### Error Types
+
+- **SpellFumbleError** - General spell failures
+- **InvalidReagentError** - Invalid inputs or parameters
+- **ArcaneDisruptionError** - External system failures (FFmpeg, rembg, etc.)
 
 ## 🧙 Creating Your Own Spells
 
 Want to craft your own magical incantations? Here's how:
 
-### Step 1: Plan Your Spell
+### Quick Start
 
-Decide what magical transformation you want to perform:
-- What inputs does it need? (images, audio, text, etc.)
-- What transformation should happen? (process, transform, extract)
-- What outputs should it produce? (files, data, metadata)
+1. **Plan your spell** - What inputs, transformation, and outputs?
+2. **Use shared utilities** - Import from `spells.utils.common`
+3. **Follow the template** - Use the spell template in [CONTRIBUTING.md](CONTRIBUTING.md)
+4. **Create quest log** - Document in `quests/your_spell.md`
+5. **Write tests** - Add tests in `tests/test_your_spell.py`
+6. **Test thoroughly** - Verify with various inputs
 
-### Step 2: Create the Spell
+### Using Shared Utilities
 
-Create a Python file in the `spells/` directory:
-```bash
-# Example: spells/my_spell.py
-touch spells/my_spell.py
+All new spells should use the shared utilities:
+
+```python
+from spells.utils.common import (
+    save_metadata,
+    validate_input_file,
+    validate_output_path,
+    get_spell_metadata_base,
+    setup_logging,
+    get_logger,
+    PerformanceTracker,
+)
+from spells.utils.error_handling import (
+    SpellFumbleError,
+    ArcaneDisruptionError,
+    InvalidReagentError,
+    handle_spell_error,
+)
 ```
 
-Follow the spell template shown in [AI_CRAFT_SPELLBOOK.md](AI_CRAFT_SPELLBOOK.md#creating-new-spells) for structure and theming.
-
-### Step 3: Create the Quest Log
-
-Create a corresponding Markdown file in `quests/`:
-```bash
-# Example: quests/my_spell.md
-touch quests/my_spell.md
-```
-
-Write the quest following the template in [AI_CRAFT_SPELLBOOK.md](AI_CRAFT_SPELLBOOK.md#creating-new-spells).
-
-### Step 4: Test Your Spell
-
-Test it manually first:
-```bash
-python spells/my_spell.py --help  # Check your parameters
-python spells/my_spell.py --input test_file.png  # Try it out
-```
-
-### Step 5: Let AI Help
-
-Use Claude Code to:
-- Review your spell for bugs
-- Check theme consistency
-- Improve error handling
-- Add tests (if desired)
+See [CONTRIBUTING.md](CONTRIBUTING.md) for complete spell creation guide.
 
 ## ⚡ Quick Reference
 
-- **[EXAMPLES.md](EXAMPLES.md)** - Complete natural language examples with sample sessions
-- **[QUICKSTART.md](QUICKSTART.md)** - Concise command reference
+### Documentation
+
+- **[AI_CRAFT_SPELLBOOK.md](AI_CRAFT_SPELLBOOK.md)** - Complete agent instructions
+- **[CONTRIBUTING.md](CONTRIBUTING.md)** - Development and contribution guide
+- **[CHANGELOG.md](CHANGELOG.md)** - Version history and changes
 - **[quests/audio_cleanse.md](quests/audio_cleanse.md)** - Audio cleansing quest guide
 - **[quests/dispel_background.md](quests/dispel_background.md)** - Background dispelling quest guide
 
 ### Spell Reference
 
-| Spell | Purpose | Input | Output | Use Case |
-|--------|---------|--------|----------|
-| audio_cleanse | Purify audio | MP3/MP4 | Podcasts, videos |
-| dispel_background | Remove background | PNG | Sprites, assets |
+| Spell | Purpose | Input | Output | Features |
+|--------|---------|--------|----------|----------|
+| audio_cleanse | Purify audio | MP3/WAV/MP4 | Cleansed audio | Silence removal, normalization, noise reduction, logging |
+| dispel_background | Remove background | PNG/JPG | Transparent PNG | Multiple models, batch processing, alpha matting, logging |
 
 ### Command Quick Reference
 
@@ -271,11 +470,23 @@ python spells/audio_cleanse.py --input file.mp3 --output clean.mp3
 # Remove background
 python spells/dispel_background.py --input image.png --output clean.png
 
+# Batch process
+python spells/dispel_background.py --batch --input "*.png" --output-dir output/
+
+# With logging
+python spells/audio_cleanse.py --input file.mp3 --log-level DEBUG --log-file debug.log
+
 # List all spells
 ls spells/
 
 # Read a quest
 cat quests/audio_cleanse.md
+
+# Run tests
+pytest -v
+
+# Run tests with coverage
+pytest --cov=spells --cov-report=html
 ```
 
 ## 🤝 Contributing
@@ -284,28 +495,23 @@ We welcome contributions from fellow magical practitioners!
 
 ### How to Contribute
 
-1. **Fork the repository** on GitHub
-2. **Create a new branch** for your feature:
-   ```bash
-   git checkout -b feat/my-new-spell
-   ```
-3. **Create your spell** following the guidelines in [AI_CRAFT_SPELLBOOK.md](AI_CRAFT_SPELLBOOK.md)
-4. **Create the quest log** with full documentation
-5. **Test thoroughly** - verify your spell works with various inputs
-6. **Commit your changes** with a clear message:
-   ```bash
-   git add spells/my_spell.py quests/my_spell.md
-   git commit -m "Add transmute image spell with quest log"
-   ```
-7. **Push and create a pull request** describing your contribution
+1. Read [CONTRIBUTING.md](CONTRIBUTING.md) for complete guidelines
+2. Fork the repository and create a feature branch
+3. Create your spell following the development guide
+4. Write tests for your spell
+5. Ensure all tests pass: `pytest -v`
+6. Check code style: `flake8 spells/` and `black --check spells/`
+7. Update documentation (README, quest logs)
+8. Submit a pull request
 
 ### Contribution Guidelines
 
-- Keep the D&D theme consistent (quests, spells, artifacts, treasures)
-- Write clear, comprehensive quest logs
+- Follow the D&D theme (quests, spells, artifacts, treasures)
+- Use shared utilities from `spells.utils`
+- Write comprehensive tests
 - Include error handling for all spell fumbles
-- Document any new dependencies in `requirements.txt`
-- Update this README with new spell descriptions
+- Document dependencies in `requirements.txt`
+- Update README with new spell descriptions
 - Test with real files before submitting
 
 ### What We're Looking For
@@ -313,8 +519,9 @@ We welcome contributions from fellow magical practitioners!
 - New spells for common automation tasks
 - Improvements to existing spells
 - Bug fixes and error handling
-- Documentation improvements
-- Quest log enhancements
+- Test coverage improvements
+- Documentation enhancements
+- Performance optimizations
 
 ## 📄 License
 
@@ -327,5 +534,10 @@ Inspired by the philosophy that AI should handle reasoning while code handles ex
 ## 📚 Additional Resources
 
 - [AI_CRAFT_SPELLBOOK.md](AI_CRAFT_SPELLBOOK.md) - Complete agent instructions
-- [QUICKSTART.md](QUICKSTART.md) - Concise command reference
+- [CONTRIBUTING.md](CONTRIBUTING.md) - Development guide
+- [CHANGELOG.md](CHANGELOG.md) - Version history
 - [quests/](quests/) - Detailed quest guides for each spell
+
+---
+
+**Version 2.0.0** - Enhanced with testing, batch processing, logging, and comprehensive error handling! ✨
