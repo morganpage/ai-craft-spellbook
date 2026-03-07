@@ -35,6 +35,54 @@ from spells.utils.error_handling import (
 
 
 # =============================================================================
+# SPELL METADATA
+# =============================================================================
+
+SPELL_METADATA = {
+    "name": "dispel_background",
+    "version": "1.0.0",
+    "primary_keywords": ["remove background", "dispel background", "remove bg", "transparent background", "background removal"],
+    "secondary_keywords": {
+        "model_type": ["human model", "portrait", "human seg", "clothing", "fashion", "fast", "quick", "lightweight", "silhouette", "icon"],
+        "quality": ["cleaner edges", "better edges", "high quality", "alpha matting"],
+        "processing": ["batch", "batch process", "multiple files"]
+    },
+    "supported_formats": ["jpg", "jpeg", "png", "webp", "bmp", "tiff", "gif"],
+    "description": "Remove backgrounds from images using arcane vision and machine learning",
+    "common_use_cases": [
+        "Character portraits and sprites",
+        "Product photography and ecommerce",
+        "Icon and logo design",
+        "Fashion and clothing images",
+        "Social media content creation"
+    ],
+    "examples": [
+        "remove background from character.png",
+        "dispel background on sprite.png with human model",
+        "remove bg from photo.jpg quickly",
+        "dispel background with cleaner edges",
+        "batch process all images in sprites/",
+        "use human model for portrait.png"
+    ],
+    "output_naming_pattern": "<name>_dispelled.png",
+    "cli_pattern": "python spells/dispel_background.py --input <file> [options]",
+    "cli_parameters": {
+        "--input": "Path to magical image artifact (required)",
+        "--output": "Path to dispelled artifact (optional)",
+        "--output-dir": "Directory for dispelled artifacts in batch mode",
+        "--model": "Arcane crystal to use (u2net, u2netp, u2net_human_seg, u2net_cloth_seg, silueta)",
+        "--alpha-matting": "Apply alpha matting for cleaner edges (slower)",
+        "--alpha-matting-foreground-threshold": "Foreground threshold for alpha matting (default: 240)",
+        "--alpha-matting-background-threshold": "Background threshold for alpha matting (default: 10)",
+        "--alpha-matting-erode-size": "Erosion size for alpha matting (default: 10)",
+        "--batch": "Batch process multiple files using glob pattern",
+        "--log-level": "Logging level: DEBUG, INFO, WARNING, ERROR (default: INFO)",
+        "--log-file": "Path to log file (optional)"
+    }
+}
+
+
+# =============================================================================
 # SPELL CONFIGURATION
 # =============================================================================
 

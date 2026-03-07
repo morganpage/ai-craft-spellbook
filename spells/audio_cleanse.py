@@ -36,6 +36,57 @@ from spells.utils.error_handling import (
 
 
 # =============================================================================
+# SPELL METADATA
+# =============================================================================
+
+SPELL_METADATA = {
+    "name": "audio_cleanse",
+    "version": "1.0.0",
+    "primary_keywords": ["cleanse", "purify", "clean", "purify audio", "audio cleansing"],
+    "secondary_keywords": {
+        "content_type": ["podcast", "youtube", "spotify", "broadcast", "video"],
+        "noise_level": ["noisy", "heavy noise", "light noise", "aggressive"],
+        "feature_toggles": ["don't remove silence", "keep pauses", "skip noise reduction", "only normalize"]
+    },
+    "supported_formats": ["mp3", "wav", "m4a", "aac", "ogg", "flac", "wma", "mp4", "avi", "mov", "mkv", "webm", "flv", "wmv"],
+    "description": "Purify audio artifacts by removing impurities, banishing void moments, and balancing magical loudness",
+    "common_use_cases": [
+        "Podcast recordings and episodes",
+        "Video audio tracks and content",
+        "Content distribution preparation",
+        "Noisy environments and background noise",
+        "Broadcast quality audio production"
+    ],
+    "examples": [
+        "cleanse audio in podcast.mp3",
+        "purify my video.mp4",
+        "clean audio with heavy noise reduction",
+        "cleanse podcast with loudness -16",
+        "purify youtube video audio",
+        "cleanse without removing silence"
+    ],
+    "output_naming_pattern": "<name>_purified.<ext>",
+    "cli_pattern": "python spells/audio_cleanse.py --input <file> [options]",
+    "cli_parameters": {
+        "--input": "Path to magical media artifact (required)",
+        "--output": "Path to purified artifact (optional)",
+        "--silence-threshold": "dB threshold for void detection (default: -40)",
+        "--silence-duration": "Minimum void duration in seconds to banish (default: 0.5)",
+        "--loudness": "Target magical loudness in LUFS (default: -14)",
+        "--no-silence-removal": "Skip void banishment",
+        "--no-normalize": "Skip magical energy balancing",
+        "--no-noise-reduction": "Skip purification magic (enabled by default)",
+        "--noise-strength": "Purification strength: light, medium, heavy (default: light)",
+        "--fade-duration": "Magical fade in/out duration at segment boundaries (default: 0.01)",
+        "--silence-padding": "Magical buffer to add at segment boundaries (default: 0.3)",
+        "--keep-temp": "Keep intermediate segment artifacts for debugging",
+        "--log-level": "Logging level: DEBUG, INFO, WARNING, ERROR (default: INFO)",
+        "--log-file": "Path to log file (optional)"
+    }
+}
+
+
+# =============================================================================
 # SPELL CONFIGURATION
 # =============================================================================
 

@@ -33,6 +33,49 @@ from spells.utils.error_handling import (
 
 
 # =============================================================================
+# SPELL METADATA
+# =============================================================================
+
+SPELL_METADATA = {
+    "name": "split_artifact",
+    "version": "1.0.0",
+    "primary_keywords": ["split", "divide", "separate", "halves"],
+    "secondary_keywords": {
+        "orientation": ["landscape", "wide", "portrait", "tall", "vertical", "square"],
+        "direction": ["left and right", "top and bottom"],
+        "output_format": ["JPEG", "JPG", "PNG", "WEBP"],
+        "location": ["save to", "output to", "folder"]
+    },
+    "supported_formats": ["png", "jpg", "jpeg", "webp", "gif", "bmp", "tiff"],
+    "description": "Divide images into two equal halves based on orientation",
+    "common_use_cases": [
+        "Separating wide sprite sheets into distinct pieces",
+        "Splitting character portraits into top/bottom sections",
+        "Dividing large UI elements into manageable components",
+        "Preparing assets for game engine import",
+        "Creating dual-frame sprites from single source"
+    ],
+    "examples": [
+        "split landscape.png",
+        "divide portrait.jpg into top and bottom",
+        "separate sprite.png into two halves",
+        "split square_512.png",
+        "divide wide image into left and right",
+        "split and save as JPEG"
+    ],
+    "output_naming_pattern": "<name>_left/right/top/bottom.<ext>",
+    "cli_pattern": "python spells/split_artifact.py --input <file> [options]",
+    "cli_parameters": {
+        "--input": "Magical image artifact path (required)",
+        "--output-dir": "Sanctum for split artifacts (optional, default: same as input)",
+        "--format": "Magical format for output: png, jpg, webp, gif, bmp, tiff (default: png)",
+        "--log-level": "Logging level: DEBUG, INFO, WARNING, ERROR (default: INFO)",
+        "--log-file": "Path to log file (optional)"
+    }
+}
+
+
+# =============================================================================
 # SPELL CONFIGURATION
 # =============================================================================
 

@@ -361,6 +361,92 @@ credentials.json, token.json  # Divine summoning scrolls (gitignored)
 - Adding CI/CD configuration
 - Changing environment variable names or config structure in .env
 
+
+
+
+## Spell Invocation Guidelines for AI Assistants
+
+### When to Use Spells vs Bash Commands
+
+AI assistants should use spells instead of bash commands when:
+- User request contains **primary keywords** matching a spell
+- File type is **supported** by the spell
+- A corresponding **quest** exists in `quests/` directory
+
+Otherwise, use appropriate bash commands or tools (Read, Glob, Grep, Bash).
+
+### Spell Invocation Decision Process
+
+1. **Identify Intent**: Extract action and target from user request
+2. **Check Spell Book**: Look for matching primary keywords
+3. **Validate File**: Check if file exists and matches supported formats
+4. **Read Quest**: If unclear about parameters, read the quest
+5. **Invoke Spell**: Construct CLI command with appropriate flags
+6. **Report Results**: Show output location and any errors
+
+### Quick Keyword Reference
+
+| Keyword | Spell | File Types |
+|----------|--------|-----------|
+| `cleanse`, `purify` | audio_cleanse | mp3, wav, m4a... |
+| `remove background`, `dispel background` | dispel_background | jpg, jpeg, png... |
+| `split`, `divide` | split_artifact | png, jpg, jpeg... |
+
+### Common Invocation Patterns
+
+| User Says | Spell | CLI Command |
+|-----------|-------|------------|
+| "cleanse audio in podcast.mp3" | audio_cleanse | `python spells/audio_cleanse.py --input podcast.mp3` |
+| "remove background from character.png" | dispel_background | `python spells/dispel_background.py --input character.png` |
+| "split landscape.png" | split_artifact | `python spells/split_artifact.py --input landscape.png` |
+
+### Spell Metadata Requirements
+
+All spells must include a `SPELL_METADATA` dict at the top of the file:
+```python
+SPELL_METADATA = {
+    "name": "spell_name",
+    "version": "1.0.0",
+    "primary_keywords": ["keyword1", "keyword2"],
+    "secondary_keywords": {...},
+    "supported_formats": ["png", "jpg"],
+    "description": "Brief description",
+    "common_use_cases": [...],
+    "examples": [...],
+    "output_naming_pattern": "<name>_output.<ext>",
+    "cli_pattern": "python spells/<name>.py --input <file>",
+    "cli_parameters": {...}
+}
+```
+
+**Required Fields:**
+- **name**: Spell filename without .py extension
+- **version**: Semantic version (e.g., 1.0.0)
+- **primary_keywords**: List of keywords that should trigger this spell
+- **supported_formats**: List of supported file extensions without dots
+- **description**: Brief description of what the spell does
+- **examples**: List of natural language examples of invoking the spell
+- **output_naming_pattern**: Pattern for output file naming
+- **cli_pattern**: Basic CLI pattern showing required parameters
+- **cli_parameters**: Dict of CLI flags to descriptions
+
+**Optional Fields:**
+- **secondary_keywords**: Dict of keyword categories to additional keywords
+- **common_use_cases**: List of common use cases for the spell
+
+**Updating Documentation:**
+After adding or modifying a spell's SPELL_METADATA, run:
+```bash
+make update-docs
+# or
+./tools/update_docs.sh
+# or
+python tools/update_spell_docs.py
+```
+
+This will regenerate SPELL_INVOCATION.md and update this section of AI_CRAFT_SPELLBOOK.md.
+
+
 ## Your Quest
 
 You sit between what I desire (quests) and what actually manifests (spells). Your job is to read adventure guides, make strategic decisions, invoke the right incantations, recover from spell fumbles, and keep growing in magical power as you adventure.

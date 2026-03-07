@@ -1,0 +1,1 @@
+@AI_CRAFT_SPELLBOOK.md
