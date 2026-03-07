@@ -88,6 +88,65 @@ Output: Background dispelled successfully!
 Model: u2netp (lightweight, faster)
 ```
 
+## Split Artifact Examples
+
+### Basic Split
+```
+User: Split landscape.png into two halves
+Claude: I'll split landscape.png into two equal halves based on orientation.
+[Executes: python spells/split_artifact.py --input landscape.png]
+Output: Artifact split successfully!
+Original size: 1024x512
+Split direction: horizontal
+Left half: dungeon_cache/landscape_left.png (512x512)
+Right half: dungeon_cache/landscape_right.png (512x512)
+```
+
+### Vertical Split
+```
+User: Divide portrait.jpg into top and bottom
+Claude: I'll split portrait.jpg vertically into top and bottom halves.
+[Executes: python spells/split_artifact.py --input portrait.jpg]
+Output: Artifact split successfully!
+Original size: 512x1024
+Split direction: vertical
+Top half: dungeon_cache/portrait_top.png (512x512)
+Bottom half: dungeon_cache/portrait_bottom.png (512x512)
+```
+
+### Custom Output Directory
+```
+User: Split sprite.png and save to parts/ folder
+Claude: I'll split sprite.png and save the halves to parts/.
+[Executes: python spells/split_artifact.py --input sprite.png --output-dir parts/]
+Output: Artifact split successfully!
+Left half: parts/sprite_left.png (256x256)
+Right half: parts/sprite_right.png (256x256)
+```
+
+### Different Format
+```
+User: Split image and save as JPEG
+Claude: I'll split the image and save halves as JPEG format.
+[Executes: python spells/split_artifact.py --input image.png --format jpg]
+Output: Artifact split successfully!
+Format: JPEG
+Left half: dungeon_cache/image_left.jpg
+Right half: dungeon_cache/image_right.jpg
+```
+
+### Square Image
+```
+User: Split square.png into halves
+Claude: I'll split square.png horizontally (default for square images).
+[Executes: python spells/split_artifact.py --input square.png]
+Output: Artifact split successfully!
+Original size: 512x512 (square)
+Split direction: horizontal
+Left half: dungeon_cache/square_left.png (256x512)
+Right half: dungeon_cache/square_right.png (256x512)
+```
+
 ## Complex Requests
 
 ### Multi-Step Processing
@@ -143,6 +202,8 @@ Output: Processed 5 artifacts successfully!
 - "with heavy noise reduction" → `--noise-strength heavy`
 - "use -16 LUFS" → `--loudness -16`
 - "with human model" → `--model u2net_human_seg`
+- "save as JPEG" → `--format jpg`
+- "output to splits/" → `--output-dir splits/`
 
 ### Output Requests
 - "save as clean.mp3" → `--output clean.mp3`
@@ -180,7 +241,15 @@ Claude: I'll dispel the background from portrait.png.
 Output: Background dispelled successfully!
 Artifact: dungeon_cache/portrait_dispelled.png
 Model: u2net_human_seg
-User: Perfect!
+User: Perfect! Now can you split this landscape image into two sprites?
+Claude: I'll split the landscape image into two halves based on orientation.
+[Executes: python spells/split_artifact.py --input landscape.png]
+Output: Artifact split successfully!
+Original size: 1024x512
+Split direction: horizontal
+Left half: dungeon_cache/landscape_left.png (512x512)
+Right half: dungeon_cache/landscape_right.png (512x512)
+User: Excellent, thank you!
 ```
 
 See [README.md](README.md) for getting started and [QUICKSTART.md](QUICKSTART.md) for command reference.

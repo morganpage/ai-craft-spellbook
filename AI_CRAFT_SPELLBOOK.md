@@ -199,6 +199,34 @@ python spells/your_spell.py --input <artifact>
 - Add dependencies to requirements.txt if needed
 - Document any new arcane keys needed in .env.example
 
+**6. Add User-Facing Examples (CRITICAL):**
+
+When creating a new spell, you MUST add example usage to these files:
+
+1. **README.md:**
+   - Add to "Quick Examples" table at the top
+   - Add complete spell description with examples
+   - Add to "Spell Reference" table
+   - Add command example to "Command Quick Reference"
+
+2. **START_HERE.md:**
+   - Add natural language example in Step 3 section
+   - Show user saying the command and Claude responding
+
+3. **EXAMPLES.md:**
+   - Create new "Your Spell Name Examples" section
+   - Include 3-5 diverse examples (basic, advanced, edge cases)
+   - Update "Common Patterns" section if applicable
+   - Include in the example session at the end
+
+**Why this is critical:**
+Users discover spells through examples in these files. Without proper documentation:
+- Your spell won't appear in natural language examples
+- Users won't know how to invoke it with Claude Code
+- The spell exists but is effectively invisible
+
+Always update these three files before considering a spell complete.
+
 ## Common Spell Patterns
 
 **Image Processing Spells:**

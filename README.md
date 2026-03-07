@@ -18,6 +18,8 @@ Start using AI Craft Spellbook immediately with these natural language commands 
 | "Dispel background on sprite.png with human model" | Uses u2net_human_seg crystal |
 | "Process all images in sprites/ with batch mode" | Batch processes multiple files |
 | "Cleanse audio with debug logging" | Runs with detailed logging |
+| "Split landscape.png into two halves" | Casts split artifact hex |
+| "Divide portrait.jpg into top and bottom" | Splits vertical image into halves |
 
 Simply type these commands in Claude Code and watch the magic happen!
 
@@ -153,6 +155,39 @@ python spells/dispel_background.py --input image.png \
 ```
 
 See [quests/dispel_background.md](quests/dispel_background.md) for full quest guide.
+
+### Split Artifact Hex (`split_artifact.py`)
+Divide magical image artifacts into two equal halves based on orientation.
+
+**Perfect for:**
+- Sprite sheet preparation
+- Character asset separation
+- Landscape/Portrait division
+- Multi-frame sprite creation
+
+**Features:**
+- Automatic orientation detection (horizontal/vertical split)
+- Support for multiple output formats (PNG, JPEG, WEBP)
+- Odd dimension handling with center split
+- Transparency preservation
+- Structured logging and performance tracking
+- Comprehensive error handling
+
+```bash
+# Basic usage - splits based on orientation
+python spells/split_artifact.py --input landscape.png
+
+# Custom output directory
+python spells/split_artifact.py --input portrait.jpg --output-dir splits/
+
+# Different output format
+python spells/split_artifact.py --input sprite.png --format jpg
+
+# Square image splits left/right by default
+python spells/split_artifact.py --input square.png
+```
+
+See [quests/split_artifact.md](quests/split_artifact.md) for full quest guide.
 
 ## 🚀 Getting Started
 
@@ -453,6 +488,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for complete spell creation guide.
 - **[CHANGELOG.md](CHANGELOG.md)** - Version history and changes
 - **[quests/audio_cleanse.md](quests/audio_cleanse.md)** - Audio cleansing quest guide
 - **[quests/dispel_background.md](quests/dispel_background.md)** - Background dispelling quest guide
+- **[quests/split_artifact.md](quests/split_artifact.md)** - Artifact splitting quest guide
 
 ### Spell Reference
 
@@ -460,6 +496,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for complete spell creation guide.
 |--------|---------|--------|----------|----------|
 | audio_cleanse | Purify audio | MP3/WAV/MP4 | Cleansed audio | Silence removal, normalization, noise reduction, logging |
 | dispel_background | Remove background | PNG/JPG | Transparent PNG | Multiple models, batch processing, alpha matting, logging |
+| split_artifact | Split image in half | PNG/JPG/WEBP | Two images | Orientation detection, multiple formats, transparency, logging |
 
 ### Command Quick Reference
 
@@ -469,6 +506,9 @@ python spells/audio_cleanse.py --input file.mp3 --output clean.mp3
 
 # Remove background
 python spells/dispel_background.py --input image.png --output clean.png
+
+# Split image
+python spells/split_artifact.py --input landscape.png --output-dir splits/
 
 # Batch process
 python spells/dispel_background.py --batch --input "*.png" --output-dir output/

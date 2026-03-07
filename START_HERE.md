@@ -49,6 +49,14 @@ Claude: I'll dispel the background from character.png.
 Claude: Background dispelled! Your artifact is at dungeon_cache/character_dispelled.png
 ```
 
+### For Splitting Images:
+```
+You: Split landscape.png into two halves
+Claude: I'll split landscape.png into two equal halves based on its orientation.
+[Executes the spell automatically]
+Claude: Artifact split successfully! Left half: dungeon_cache/landscape_left.png, Right half: dungeon_cache/landscape_right.png
+```
+
 ## 📚 What Just Happened
 
 You didn't need to:

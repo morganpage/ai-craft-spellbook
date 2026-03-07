@@ -360,6 +360,30 @@ python spells/your_spell.py --input <file>
 **Quest Log:** `quests/your_spell.md`
 ```
 
+**Important: Update User-Facing Documentation**
+
+When adding a new spell, you MUST add example usage to these files:
+
+1. **README.md:**
+   - Add to "Quick Examples" table in ⚡ Quick Examples section
+   - Add complete spell description in 📜 Available Spells section
+   - Add to "Spell Reference" table in 🧙 Creating Your Own Spells section
+   - Add command example to "Command Quick Reference" section
+   - Add quest link in Documentation section
+
+2. **START_HERE.md:**
+   - Add example usage in Step 3: Speak Naturally! section
+   - Show natural language command and expected output
+
+3. **EXAMPLES.md:**
+   - Add new section "Your Spell Name Examples"
+   - Include 3-5 example scenarios (basic, advanced, edge cases)
+   - Update "Common Patterns" section if applicable
+   - Update example session to show spell in use
+
+**Why this matters:**
+Users discover spells through natural language examples. Without documentation updates, your spell won't be discoverable or usable by Claude Code's natural language understanding.
+
 ---
 
 ## Code Style Guidelines
