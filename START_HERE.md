@@ -57,6 +57,30 @@ Claude: I'll split landscape.png into two equal halves based on its orientation.
 Claude: Artifact split successfully! Left half: dungeon_cache/landscape_left.png, Right half: dungeon_cache/landscape_right.png
 ```
 
+### For Resizing Images:
+```
+You: Resize character.png to 512x512
+Claude: I'll transmute character.png to 512x512 dimensions.
+[Executes the spell automatically]
+Claude: Transmutation complete! Your resized artifact is at dungeon_cache/character_resized.png
+```
+
+### For Blurring Images:
+```
+You: Blur photo.jpg
+Claude: I'll obscure photo.jpg with a Gaussian blur ritual.
+[Executes the spell automatically]
+Claude: Obscuration complete! Your artifact is at dungeon_cache/photo_obscured.jpg
+```
+
+### For Creating Animated GIFs:
+```
+You: Create gif from frames/
+Claude: I'll weave those magical panels into an animated scroll.
+[Executes the spell automatically]
+Claude: Animation ritual complete! Your scroll is at frames_animated.gif
+```
+
 ## 📚 What Just Happened
 
 You didn't need to:

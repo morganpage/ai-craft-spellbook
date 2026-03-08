@@ -20,6 +20,11 @@ Start using AI Craft Spellbook immediately with these natural language commands 
 | "Cleanse audio with debug logging" | Runs with detailed logging |
 | "Split landscape.png into two halves" | Casts split artifact hex |
 | "Divide portrait.jpg into top and bottom" | Splits vertical image into halves |
+| "Resize character.png to 512x512" | Transmutes artifact size |
+| "Scale down sprite.png by 50%" | Reduces artifact by percentage |
+| "Blur photo.jpg" | Casts obscure artifact hex |
+| "Obscure sensitive.png with heavy blur" | Applies strong blur effect |
+| "Create gif from frames/" | Weaves animated scroll |
 
 Simply type these commands in Claude Code and watch the magic happen!
 
@@ -188,6 +193,117 @@ python spells/split_artifact.py --input square.png
 ```
 
 See [quests/split_artifact.md](quests/split_artifact.md) for full quest guide.
+
+### Resize Artifact Transmutation (`resize_artifact.py`)
+Transmute the size of magical image artifacts while preserving their essence.
+
+**Perfect for:**
+- Game asset preparation (multiple resolution versions)
+- Thumbnail generation
+- Sprite sheet resizing for different devices
+- Web optimization
+
+**Features:**
+- Multiple resize modes (exact, fit, cover, scale)
+- Aspect ratio preservation
+- Multiple resampling filters (nearest, bilinear, bicubic, lanczos)
+- Quality control for lossy formats
+- Transparency preservation
+- Structured logging and performance tracking
+- Comprehensive error handling
+
+```bash
+# Basic usage - resize to exact dimensions (maintains aspect ratio)
+python spells/resize_artifact.py --input character.png --width 512 --height 512
+
+# Scale to 50% of original size
+python spells/resize_artifact.py --input sprite.png --scale 50
+
+# Fit within maximum bounds
+python spells/resize_artifact.py --input landscape.jpg --width 1920 --height 1080 --fit
+
+# Cover exact bounds (may crop)
+python spells/resize_artifact.py --input photo.png --width 800 --height 600 --cover
+
+# Create thumbnail with fast resampling
+python spells/resize_artifact.py --input photo.jpg --width 150 --height 150 --resampling bilinear
+```
+
+See [quests/resize_artifact.md](quests/resize_artifact.md) for full quest guide.
+
+### Obscure Artifact Hex (`obscure_artifact.py`)
+Cast the obscure artifact hex to shroud magical images in mystical haze.
+
+**Perfect for:**
+- Privacy protection (blurring faces, documents, locations)
+- Background softening for portraits and product photos
+- Artistic depth-of-field effects
+- Image preprocessing
+
+**Features:**
+- Multiple blur types (gaussian for smooth, box for fast)
+- Adjustable obscuration power (0.1-100.0)
+- Multiple iterations for stronger effects
+- Transparency preservation
+- Quality control for lossy formats
+- Structured logging and performance tracking
+- Comprehensive error handling
+
+```bash
+# Basic blur with default settings
+python spells/obscure_artifact.py --input photo.jpg
+
+# Heavy blur for privacy
+python spells/obscure_artifact.py --input sensitive.png --radius 20
+
+# Subtle blur for softening
+python spells/obscure_artifact.py --input portrait.png --radius 2
+
+# Fast box blur
+python spells/obscure_artifact.py --input sprite.png --blur-type box --radius 10
+
+# Multiple iterations for stronger effect
+python spells/obscure_artifact.py --input background.jpg --radius 5 --iterations 3
+```
+
+See [quests/obscure_artifact.md](quests/obscure_artifact.md) for full quest guide.
+
+### Animate Artifact Ritual (`animate_artifact.py`)
+Weave magical image panels into an animated scroll (GIF) that captures chronomantic essence.
+
+**Perfect for:**
+- Game sprite animation (walk cycles, attacks, idle animations)
+- UI element animations (loading spinners, animated icons)
+- Tutorial demonstrations and previews
+- Animated GIF creation from sequential renders
+
+**Features:**
+- Configurable temporal power (frame rate control: 10-5000ms per frame)
+- Eternal or finite loop control
+- Dimensional harmonization (automatic resizing to consistent dimensions)
+- Arcane compression (file size optimization)
+- RGBA to RGB conversion for GIF compatibility
+- Structured logging and performance tracking
+- Comprehensive error handling
+
+```bash
+# Basic usage (10fps, infinite loop)
+python spells/animate_artifact.py --input frames/
+
+# Custom frame rate (20fps = 50ms per frame)
+python spells/animate_artifact.py --input sprite_frames/ --duration 50
+
+# Finite loop (play 3 times then stop)
+python spells/animate_artifact.py --input frames/ --loop 3
+
+# Resize during animation
+python spells/animate_artifact.py --input frames/ --width 256 --height 256
+
+# Disable optimization for faster processing
+python spells/animate_artifact.py --input frames/ --no-optimize
+```
+
+See [quests/animate_artifact.md](quests/animate_artifact.md) for full quest guide.
 
 ## 🚀 Getting Started
 
@@ -489,6 +605,9 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for complete spell creation guide.
 - **[quests/audio_cleanse.md](quests/audio_cleanse.md)** - Audio cleansing quest guide
 - **[quests/dispel_background.md](quests/dispel_background.md)** - Background dispelling quest guide
 - **[quests/split_artifact.md](quests/split_artifact.md)** - Artifact splitting quest guide
+- **[quests/resize_artifact.md](quests/resize_artifact.md)** - Artifact resizing quest guide
+- **[quests/obscure_artifact.md](quests/obscure_artifact.md)** - Image obscuring quest guide
+- **[quests/animate_artifact.md](quests/animate_artifact.md)** - Animation creation quest guide
 
 ### Spell Reference
 
@@ -497,6 +616,9 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for complete spell creation guide.
 | audio_cleanse | Purify audio | MP3/WAV/MP4 | Cleansed audio | Silence removal, normalization, noise reduction, logging |
 | dispel_background | Remove background | PNG/JPG | Transparent PNG | Multiple models, batch processing, alpha matting, logging |
 | split_artifact | Split image in half | PNG/JPG/WEBP | Two images | Orientation detection, multiple formats, transparency, logging |
+| resize_artifact | Resize image | PNG/JPG/WEBP/BMP/TIFF/GIF | Resized image | Multiple modes, aspect ratio, resampling filters, quality control, logging |
+| obscure_artifact | Blur image | PNG/JPG/WEBP/BMP/TIFF/GIF | Obscured image | Multiple blur types, adjustable radius, iterations, transparency, logging |
+| animate_artifact | Create GIF | PNG/JPG/WEBP/BMP/TIFF directory | Animated GIF | Configurable frame rate, loop control, dimensional harmonization, optimization, logging |
 
 ### Command Quick Reference
 
@@ -509,6 +631,27 @@ python spells/dispel_background.py --input image.png --output clean.png
 
 # Split image
 python spells/split_artifact.py --input landscape.png --output-dir splits/
+
+# Resize image
+python spells/resize_artifact.py --input character.png --width 512 --height 512
+
+# Scale by percentage
+python spells/resize_artifact.py --input sprite.png --scale 50
+
+# Blur image
+python spells/obscure_artifact.py --input photo.jpg --radius 5
+
+# Heavy blur for privacy
+python spells/obscure_artifact.py --input sensitive.png --radius 20 --iterations 2
+
+# Create animated GIF
+python spells/animate_artifact.py --input frames/
+
+# Custom frame rate (20fps)
+python spells/animate_artifact.py --input frames/ --duration 50
+
+# Finite loop
+python spells/animate_artifact.py --input frames/ --loop 3
 
 # Batch process
 python spells/dispel_background.py --batch --input "*.png" --output-dir output/

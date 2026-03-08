@@ -147,6 +147,201 @@ Left half: dungeon_cache/square_left.png (256x512)
 Right half: dungeon_cache/square_right.png (256x512)
 ```
 
+## Resize Artifact Examples
+
+### Basic Resize
+```
+User: Resize character.png to 512x512
+Claude: I'll transmute character.png to 512x512 dimensions.
+[Executes: python spells/resize_artifact.py --input character.png --width 512 --height 512]
+Output: Transmutation completed successfully!
+Original dimensions: 1024x1024
+New dimensions: 512x512
+Method: fit
+Artifact: dungeon_cache/character_resized.png
+```
+
+### Scale by Percentage
+```
+User: Scale down sprite.png by 50%
+Claude: I'll reduce sprite.png to 50% of its original size.
+[Executes: python spells/resize_artifact.py --input sprite.png --scale 50]
+Output: Transmutation completed successfully!
+Original dimensions: 256x256
+New dimensions: 128x128
+Method: scale
+Scale factor: 50.0%
+```
+
+### Fit Within Bounds
+```
+User: Resize landscape.jpg to fit within 1920x1080
+Claude: I'll resize landscape.jpg to fit within 1920x1080 while maintaining aspect ratio.
+[Executes: python spells/resize_artifact.py --input landscape.jpg --width 1920 --height 1080 --fit]
+Output: Transmutation completed successfully!
+Original dimensions: 3840x2160
+New dimensions: 1920x1080
+Method: fit
+Artifact: dungeon_cache/landscape_resized.jpg
+```
+
+### Create Thumbnail
+```
+User: Create 150x150 thumbnail from photo.png
+Claude: I'll create a 150x150 thumbnail from photo.png using fast resampling.
+[Executes: python spells/resize_artifact.py --input photo.png --width 150 --height 150 --fit --resampling bilinear]
+Output: Transmutation completed successfully!
+Original dimensions: 2400x1600
+New dimensions: 150x100
+Method: fit
+Artifact: dungeon_cache/photo_resized.png
+```
+
+### Resize Width Only
+```
+User: Resize icon.png to width 256
+Claude: I'll resize icon.png to width 256, calculating height to maintain aspect ratio.
+[Executes: python spells/resize_artifact.py --input icon.png --width 256]
+Output: Transmutation completed successfully!
+Original dimensions: 512x512
+New dimensions: 256x256
+Method: width
+```
+
+### Cover Exact Bounds (May Crop)
+```
+User: Resize photo.jpg to cover 800x600 exactly
+Claude: I'll resize photo.jpg to cover 800x600 exactly, cropping if necessary.
+[Executes: python spells/resize_artifact.py --input photo.jpg --width 800 --height 600 --cover]
+Output: Transmutation completed successfully!
+Original dimensions: 1920x1080
+New dimensions: 800x600
+Method: cover (center cropped)
+Artifact: dungeon_cache/photo_resized.jpg
+```
+
+## Image Obscuration Examples
+
+### Basic Blur
+```
+User: Blur photo.jpg
+Claude: I'll obscure photo.jpg with a Gaussian blur ritual.
+[Executes: python spells/obscure_artifact.py --input photo.jpg]
+Output: Obscuration ritual completed successfully!
+Artifact: dungeon_cache/photo_obscured.jpg
+Ritual: gaussian
+Obscuration power: 5.0
+Iterations: 1
+```
+
+### Heavy Blur
+```
+User: Apply heavy blur to sensitive.png
+Claude: I'll apply strong obscuration to sensitive.png for privacy.
+[Executes: python spells/obscure_artifact.py --input sensitive.png --radius 20]
+Output: Obscuration ritual completed successfully!
+Artifact: dungeon_cache/sensitive_obscured.png
+Obscuration power: 20.0
+Ritual: gaussian
+```
+
+### Subtle Blur
+```
+User: Add subtle blur to portrait.png
+Claude: I'll apply a soft blur effect to portrait.png.
+[Executes: python spells/obscure_artifact.py --input portrait.png --radius 2]
+Output: Obscuration ritual completed successfully!
+Artifact: dungeon_cache/portrait_obscured.png
+Obscuration power: 2.0
+Effect: Subtle softening
+```
+
+### Box Blur (Fast)
+```
+User: Blur sprite.png with box filter
+Claude: I'll use the box enchantment for fast processing.
+[Executes: python spells/obscure_artifact.py --input sprite.png --blur-type box --radius 10]
+Output: Obscuration ritual completed successfully!
+Artifact: dungeon_cache/sprite_obscured.png
+Ritual: box (fast)
+Obscuration power: 10.0
+```
+
+### Multiple Iterations
+```
+User: Blur background.jpg heavily with multiple passes
+Claude: I'll apply multiple blur iterations for strong obscuration.
+[Executes: python spells/obscure_artifact.py --input background.jpg --radius 5 --iterations 3]
+Output: Obscuration ritual completed successfully!
+Artifact: dungeon_cache/background_obscured.jpg
+Obscuration power: 5.0
+Iterations: 3
+Effect: Very strong blur
+```
+
+## Animate Artifact Examples
+
+### Basic Animation
+```
+User: Create gif from frames/
+Claude: I'll weave those magical panels into an animated scroll.
+[Executes: python spells/animate_artifact.py --input frames/]
+Output: Animation ritual completed successfully!
+Animated scroll: frames_animated.gif
+Frame count: 24
+Frame rate: 10 fps
+Duration: 2.4s
+Incantation binding: Eternal
+```
+
+### Custom Frame Rate
+```
+User: Make animation from sprite_frames/ with 200ms duration
+Claude: I'll animate sprite_frames/ with 200ms temporal power per panel.
+[Executes: python spells/animate_artifact.py --input sprite_frames/ --duration 200]
+Output: Animation ritual completed successfully!
+Animated scroll: sprite_frames_animated.gif
+Frame count: 12
+Frame rate: 5 fps
+Duration: 2.4s
+```
+
+### Finite Loop
+```
+User: Generate gif from panels/ with 3 loops
+Claude: I'll create an animation from panels/ that plays 3 times.
+[Executes: python spells/animate_artifact.py --input panels/ --loop 3]
+Output: Animation ritual completed successfully!
+Animated scroll: panels_animated.gif
+Frame count: 8
+Frame rate: 10 fps
+Incantation binding: 3 times
+```
+
+### Resize and Animate
+```
+User: Animate frames/ and resize to 256x256
+Claude: I'll animate frames/ and apply dimensional harmonization to 256x256.
+[Executes: python spells/animate_artifact.py --input frames/ --width 256 --height 256]
+Output: Animation ritual completed successfully!
+Animated scroll: frames_animated.gif
+Original dimensions: 512x512
+Final dimensions: 256x256
+Frame count: 16
+```
+
+### Optimized Animation
+```
+User: Create optimized gif from rendered_frames/
+Claude: I'll create an optimized animated scroll from rendered_frames/.
+[Executes: python spells/animate_artifact.py --input rendered_frames/ --optimize]
+Output: Animation ritual completed successfully!
+Animated scroll: rendered_frames_animated.gif
+Optimization: Enabled
+Compression ratio: 15.2%
+Size: 12.5 MB → 1.9 MB
+```
+
 ## Complex Requests
 
 ### Multi-Step Processing
@@ -204,6 +399,23 @@ Output: Processed 5 artifacts successfully!
 - "with human model" → `--model u2net_human_seg`
 - "save as JPEG" → `--format jpg`
 - "output to splits/" → `--output-dir splits/`
+- "scale by 50%" → `--scale 50`
+- "fit within bounds" → `--fit`
+- "cover exact bounds" → `--cover`
+- "use lanczos filter" → `--resampling lanczos`
+- "blur with radius 10" → `--radius 10`
+- "heavy blur" → `--radius 20` (or higher)
+- "subtle blur" → `--radius 2` (or lower)
+- "use box blur" → `--blur-type box`
+- "multiple iterations" → `--iterations 3`
+- "create gif" → `--input <directory>`
+- "make animation" → `--input <directory>`
+- "frame rate" → `--duration <milliseconds>`
+- "fps" → derived from duration (1000/duration)
+- "loop" → `--loop <count>`
+- "infinite loop" → `--loop 0` (default)
+- "resize animation" → `--width <pixels> --height <pixels>`
+- "no optimization" → `--no-optimize`
 
 ### Output Requests
 - "save as clean.mp3" → `--output clean.mp3`
@@ -249,6 +461,30 @@ Original size: 1024x512
 Split direction: horizontal
 Left half: dungeon_cache/landscape_left.png (512x512)
 Right half: dungeon_cache/landscape_right.png (512x512)
+User: Excellent! Now can you resize this character.png to 256x256 for a thumbnail?
+Claude: I'll transmute character.png to 256x256 dimensions.
+[Executes: python spells/resize_artifact.py --input character.png --width 256 --height 256]
+Output: Transmutation completed successfully!
+Original dimensions: 1024x1024
+New dimensions: 256x256
+Method: fit
+Artifact: dungeon_cache/character_resized.png
+User: Perfect! Now can you blur this background image for privacy?
+Claude: I'll obscure the background image with a Gaussian blur ritual.
+[Executes: python spells/obscure_artifact.py --input background.jpg --radius 15]
+Output: Obscuration ritual completed successfully!
+Artifact: dungeon_cache/background_obscured.jpg
+Ritual: gaussian
+Obscuration power: 15.0
+User: Perfect! Now can you create an animated GIF from these frames in walk_cycle/?
+Claude: I'll weave those magical panels into an animated scroll.
+[Executes: python spells/animate_artifact.py --input walk_cycle/]
+Output: Animation ritual completed successfully!
+Animated scroll: walk_cycle_animated.gif
+Frame count: 24
+Frame rate: 10 fps
+Duration: 2.4s
+Incantation binding: Eternal
 User: Excellent, thank you!
 ```
 
